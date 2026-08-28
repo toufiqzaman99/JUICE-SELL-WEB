@@ -1,0 +1,218 @@
+@import '@fontsource/anton';
+@import '@fontsource/playfair-display/400-italic.css';
+@import '@fontsource/playfair-display/500-italic.css';
+@import '@fontsource/space-grotesk/300.css';
+@import '@fontsource/space-grotesk/400.css';
+@import '@fontsource/space-grotesk/500.css';
+@import '@fontsource/space-grotesk/600.css';
+@import '@fontsource/space-grotesk/700.css';
+@import 'tailwindcss';
+
+@theme {
+  /* ── FROST & SIP · dark luxury tokens ─────────────────────── */
+  --color-ink: #0a0908;
+  --color-coal: #141110;
+  --color-soot: #1c1815;
+  --color-cream: #f5f1e8;
+  --color-fog: #8c8578;
+  --color-line: #2b2620;
+  --color-gold: #c9a24b;
+  --color-gold-soft: #e6cd8a;
+  --color-lemon: #e9c33c;
+  --color-lemon-soft: #f7e4a0;
+  --color-berry: #e4556e;
+  --color-berry-soft: #f6a3b3;
+  --color-cocoa: #a06a3c;
+  --color-cocoa-soft: #d8b28c;
+  --color-coffee: #c08a5a;
+  --color-coffee-soft: #e8cba4;
+
+  --font-display: 'Anton', 'Arial Narrow', Impact, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.65, 0.05, 0.36, 1);
+}
+
+/* ── base ──────────────────────────────────────────────────── */
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  background-color: var(--color-ink);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-ink);
+}
+
+/* hide native cursor when the custom one is active */
+@media (pointer: fine) {
+  body.custom-cursor,
+  body.custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+/* ── utilities ─────────────────────────────────────────────── */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(245, 241, 232, 0.28);
+  color: transparent;
+}
+.text-stroke-gold {
+  -webkit-text-stroke: 1px rgba(201, 162, 75, 0.55);
+  color: transparent;
+}
+
+.grain::after {
+  content: '';
+  position: fixed;
+  inset: -50%;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.055;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 0.9s steps(4) infinite;
+}
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2%, 1.5%); }
+  50% { transform: translate(1.5%, -2%); }
+  75% { transform: translate(-1%, -1%); }
+  100% { transform: translate(2%, 2%); }
+}
+
+.vignette::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 120% 90% at 50% 45%, transparent 55%, rgba(10, 9, 8, 0.85) 100%);
+}
+
+.mask-fade-b {
+  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── SVG art animation classes (transform-box keeps them local) ── */
+.art-floater {
+  animation: float-soft 6s ease-in-out infinite;
+  transform-box: fill-box;
+}
+.bubble {
+  animation: bubble-rise 4s ease-in infinite;
+  transform-box: fill-box;
+}
+.droplet {
+  animation: drop-fall 3s ease-in infinite;
+  transform-box: fill-box;
+}
+.condensation-dot {
+  animation: twinkle 2.8s ease-in-out infinite;
+  transform-box: fill-box;
+}
+.condensation-dot.d1 { animation-delay: 0.7s; }
+.condensation-dot.d2 { animation-delay: 1.4s; }
+.condensation-dot.d3 { animation-delay: 2.1s; }
+.splash-pop {
+  animation: splash-pulse 4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes bubble-rise {
+  0% { transform: translateY(0); opacity: 0; }
+  12% { opacity: 0.9; }
+  100% { transform: translateY(-110px); opacity: 0; }
+}
+@keyframes drop-fall {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  82% { opacity: 1; }
+  100% { transform: translateY(46px); opacity: 0; }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.75; }
+}
+@keyframes splash-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+@keyframes hint-drop {
+  0% { transform: translateY(-110%); }
+  55% { transform: translateY(320%); opacity: 1; }
+  100% { transform: translateY(320%); opacity: 0; }
+}
+.hero-hint-line {
+  animation: hint-drop 1.9s cubic-bezier(0.65, 0.05, 0.36, 1) infinite;
+}
+@keyframes marquee-scroll {
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee-scroll 26s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .art-floater,
+  .bubble,
+  .droplet,
+  .condensation-dot,
+  .splash-pop {
+    animation: none;
+  }
+}
+
+/* soft pulse for attention elements */
+@keyframes float-soft {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -14px, 0); }
+}
+.animate-float-soft {
+  animation: float-soft 5s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 22s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain::after {
+    animation: none;
+  }
+  .animate-float-soft,
+  .animate-spin-slow {
+    animation: none;
+  }
+}
