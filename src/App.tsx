@@ -1,89 +1,50 @@
-import { useEffect, useState } from 'react'
-import { gsap, prefersReducedMotion, refreshAllTriggers } from './lib/gsap'
+﻿import { useEffect, useState } from 'react'
+import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
+import { ArrowUpRight,  ChevronLeft, ChevronRight, Clock3, Mail, MapPin, Menu, Phone, Play, X } from 'lucide-react'
 
-// dev-only debug handle for the verification harness
-if (import.meta.env.DEV) {
-  ;(window as unknown as { gsap?: typeof gsap }).gsap = gsap
+const images = {
+  hero: 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=2200&q=85',
+  intro: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=85',
+  interior: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=85',
+  chef: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=1000&q=85',
 }
-import { initLenis, startScroll, stopScroll } from './lib/lenis'
-import { CartProvider } from './context/CartContext'
-import { CustomCursor } from './components/CustomCursor'
-import { ScrollRail } from './components/ScrollRail'
-import { Navbar } from './components/Navbar'
-import { Preloader } from './components/Preloader'
-import { Hero, type IntroStage } from './components/Hero'
-import { Marquee } from './components/Marquee'
-import { Showcase } from './components/Showcase'
-import {
-  ChocolateSection,
-  CoffeeSection,
-  LemonadeSection,
-  StrawberrySection,
-} from './components/FeatureSections'
-import { IngredientsExplosion } from './components/IngredientsExplosion'
-import { FinalCTA } from './components/FinalCTA'
-import { Footer } from './components/Footer'
-import { CartDrawer } from './components/CartDrawer'
-import { FlyToCart } from './components/FlyToCart'
+const dishes = [
+  ['Truffle Tagliolini','Fresh pasta Â· Black truffle Â· Parmesan','$28','https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=900&q=80'],
+  ['Miso Glazed Salmon','Wild salmon Â· White miso Â· Citrus','$34','https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=900&q=80'],
+  ['Wagyu Tenderloin','A5 Wagyu Â· Charred vegetables Â· Jus','$68','https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80'],
+  ['Burrata & Heirloom Tomato','Burrata Â· Basil oil Â· Sea salt','$22','https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=900&q=80'],
+  ['Chocolate Noir','Dark chocolate Â· Vanilla Â· Hazelnut','$16','https://images.unsplash.com/photo-1575377427642-087cf684f29d?auto=format&fit=crop&w=900&q=80'],
+  ['Yuzu Cheesecake','Yuzu Â· Cream cheese Â· Sesame','$15','https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=900&q=80'],
+]
+const menu = { Starters:[['BURRATA','Creamy burrata, tomatoes, basil oil','$22'],['HAMACHI CRUDO','Yuzu kosho, radish, smoked oil','$24'],['DUCK LIVER','Brioche, cherry, black pepper','$26']], 'Soups & Salads':[['SPRING PEA','Mint, crÃ¨me fraÃ®che, lemon','$14'],['CITRUS SALAD','Fennel, olive, aged goat cheese','$18'],['LOBSTER BISQUE','Cognac, tarragon, sweet cream','$20']], 'Main Courses':[['GRILLED SEA BASS','Seasonal vegetables, lemon beurre blanc','$38'],['WAGYU TENDERLOIN','A5 Wagyu, roasted vegetables, red wine jus','$68'],['ROASTED CHICKEN','Morels, pearl onion, jus gras','$32']], Pasta:[['TRUFFLE RISOTTO','Arborio rice, parmesan, black truffle','$31'],['TAGLIOLINI','Hand-cut pasta, egg yolk, pecorino','$28'],['LOBSTER AGNOLOTTI','Brown butter, bisque, chive','$36']], Seafood:[['SCALLOP','Cauliflower, caviar, champagne','$42'],['MISO COD','Turnip, ginger, spring onion','$35'],['ROASTED OCTOPUS','White bean, saffron, olive','$29']], Desserts:[['CHOCOLATE NOIR','Dark chocolate, vanilla, hazelnut','$16'],['YUZU CHEESECAKE','Yuzu, cream cheese, sesame','$15'],['PEAR TART','Brown butter, crÃ¨me fraÃ®che','$14']], Drinks:[['NOIRÃ‰ OLD FASHIONED','Bourbon, cacao, orange','$18'],['GARDEN MARTINI','Gin, cucumber, basil, vermouth','$16'],['CÃ”TES DU RHÃ”NE','Grenache, Syrah, France','$15']] } as Record<string,string[][]>
+const reveal = { hidden:{opacity:0,y:35}, show:{opacity:1,y:0,transition:{duration:.8}} }
 
-export default function App() {
-  const [stage, setStage] = useState<IntroStage>(() =>
-    prefersReducedMotion() ? 'done' : 'loading',
-  )
-
-  /* boot smooth scrolling; lock the page during the cold-open */
-  useEffect(() => {
-    initLenis()
-    if (prefersReducedMotion()) return
-    stopScroll()
-    return () => {
-      startScroll()
-    }
-  }, [])
-
-  /* release the scroll once the curtains have opened; re-measure all
-     triggers individually so pinned sections measure from the final layout */
-  useEffect(() => {
-    if (stage === 'done') {
-      startScroll()
-      const t = window.setTimeout(() => {
-        refreshAllTriggers()
-      }, 160)
-      return () => window.clearTimeout(t)
-    }
-  }, [stage])
-
-  return (
-    <CartProvider>
-      <div className="grain relative min-h-screen bg-ink text-cream">
-        <CustomCursor />
-        <ScrollRail visible={stage === 'done'} />
-        <Navbar visible={stage === 'done'} />
-
-        {stage !== 'done' && (
-          <Preloader
-            onReveal={() => setStage('revealing')}
-            onDone={() => setStage('done')}
-          />
-        )}
-
-        <main>
-          <Hero stage={stage} />
-          <Marquee />
-          <Showcase />
-          <LemonadeSection />
-          <StrawberrySection />
-          <ChocolateSection />
-          <CoffeeSection />
-          <Marquee className="border-t-0" />
-          <IngredientsExplosion />
-          <FinalCTA />
-        </main>
-
-        <Footer />
-        <CartDrawer />
-        <FlyToCart />
-      </div>
-    </CartProvider>
-  )
+function Section({ children, id, className='' }:{children:React.ReactNode,id?:string,className?:string}){ return <section id={id} className={`px-6 md:px-12 lg:px-20 py-24 md:py-36 ${className}`}><div className="max-w-[1280px] mx-auto">{children}</div></section> }
+function Label({ children }:{children:React.ReactNode}){ return <p className="label">{children}</p> }
+function App(){
+ const [scrolled,setScrolled]=useState(false),[open,setOpen]=useState(false),[category,setCategory]=useState('Starters'),[lightbox,setLightbox]=useState<number|null>(null),[sent,setSent]=useState(false)
+ const {scrollY}=useScroll(); const heroY=useTransform(scrollY,[0,700],[0,170]);
+ useEffect(()=>{const f=()=>setScrolled(scrollY.get()>40); return scrollY.on('change',f)},[scrollY])
+ const nav=[['Home','hero'],['Menu','menu'],['About','about'],['Gallery','gallery'],['Experience','experience'],['Contact','contact']]
+ const go=(id:string)=>{document.getElementById(id)?.scrollIntoView({behavior:'smooth'});setOpen(false)}
+ return <div className="site">
+  <nav className={`nav ${scrolled?'nav-solid':''}`}><button className="logo" onClick={()=>go('hero')}>NOIRÃ‰<span>Â®</span></button><div className="nav-links">{nav.map(([n,id])=><button key={id} onClick={()=>go(id)}>{n}</button>)}</div><button className="reserve-top" onClick={()=>go('reservation')}>Reserve a Table <ArrowUpRight size={15}/></button><button className="hamb" onClick={()=>setOpen(true)} aria-label="Open menu"><Menu/></button></nav>
+  <AnimatePresence>{open&&<motion.div className="mobile-menu" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}><button className="close" onClick={()=>setOpen(false)}><X/></button><div>{nav.map(([n,id],i)=><motion.button initial={{y:30,opacity:0}} animate={{y:0,opacity:1}} transition={{delay:i*.06}} key={id} onClick={()=>go(id)}>{n}</motion.button>)}</div><button className="reserve-top" onClick={()=>go('reservation')}>Reserve a Table <ArrowUpRight size={15}/></button></motion.div>}</AnimatePresence>
+  <main>
+   <section id="hero" className="hero"><motion.img style={{y:heroY}} src={images.hero} alt="Candlelit fine dining table"/><div className="hero-overlay"/><motion.div className="hero-copy" initial="hidden" animate="show" variants={reveal}><Label>EST. 2012 Â· CONTEMPORARY CUISINE</Label><h1>An experience<br/><em>beyond taste.</em></h1><p>Where seasonal ingredients, modern technique,<br className="desktop"/> and timeless hospitality come together.</p><div className="hero-actions"><button className="btn gold" onClick={()=>go('reservation')}>Reserve a Table <ArrowUpRight size={17}/></button><button className="text-btn" onClick={()=>go('menu')}>Explore Menu <ArrowUpRight size={17}/></button></div></motion.div><div className="scroll">SCROLL TO EXPLORE <span></span></div><div className="hero-index">01 <i/> 04</div></section>
+   <Section className="intro"><motion.div className="intro-text" initial="hidden" whileInView="show" viewport={{once:true,amount:.3}} variants={reveal}><Label>The NoirÃ© Philosophy</Label><h2>Simple ingredients.<br/><em>Extraordinary moments.</em></h2><p>We believe the most memorable meals are born from a quiet confidence in good ingredients. Our kitchen follows the seasons, shaping each plate with clarity, curiosity, and a touch of the unexpected.</p><button className="text-btn">Our Story <ArrowUpRight size={17}/></button></motion.div><motion.div className="intro-img" initial={{clipPath:'inset(0 0 100% 0)'}} whileInView={{clipPath:'inset(0 0 0% 0)'}} transition={{duration:1.1}} viewport={{once:true}}><img src={images.intro} alt="Artfully plated seasonal dish"/><span>01 / 04</span></motion.div></Section>
+   <Section id="menu" className="signatures"><div className="section-head"><div><Label>From Our Kitchen</Label><h2>Our <em>signatures.</em></h2></div><p>A selection from our<br/>seasonal kitchen.</p></div><div className="dish-grid">{dishes.map((d,i)=><motion.article className="dish" key={d[0]} initial="hidden" whileInView="show" viewport={{once:true}} variants={reveal} transition={{delay:i*.07}}><div className="dish-img"><img src={d[3]} alt={d[0]}/><span className="dish-arrow"><ArrowUpRight size={18}/></span></div><div className="dish-meta"><div><h3>{d[0]}</h3><p>{d[1]}</p></div><b>{d[2]}</b></div></motion.article>)}</div><button className="outline-btn" onClick={()=>go('menu-list')}>View Full Menu <ArrowUpRight size={17}/></button></Section>
+   <Section id="menu-list" className="menu-section"><div className="section-head"><div><Label>The Complete Menu</Label><h2>Made with <em>intention.</em></h2></div><p>Our menu changes with the<br/>rhythm of the seasons.</p></div><div className="cat-tabs">{Object.keys(menu).map(c=><button className={category===c?'active':''} onClick={()=>setCategory(c)} key={c}>{c}</button>)}</div><motion.div className="menu-list" key={category} initial={{opacity:0,y:15}} animate={{opacity:1,y:0}}>{menu[category].map(x=><div className="menu-row" key={x[0]}><div><h3>{x[0]}</h3><p>{x[1]}</p></div><strong>{x[2]}</strong></div>)}</motion.div></Section>
+   <Section id="about" className="about"><div className="about-img"><img src={images.interior} alt="Warm NoirÃ© restaurant interior"/><div className="play"><Play fill="currentColor" size={18}/></div></div><div className="about-copy"><Label>Our Story</Label><h2>More than<br/><em>a restaurant.</em></h2><p>NOIRÃ‰ was created around a simple idea: great food should create unforgettable memories. From the first pour to the last course, every detail is considered.</p><div className="stats">{[['2012','Since'],['15+','Awards'],['30+','Seasonal dishes'],['12','Years of hospitality']].map(x=><div key={x[1]}><b>{x[0]}</b><span>{x[1]}</span></div>)}</div></div></Section>
+   <Section className="chef"><div><Label>At The Pass</Label><h2>Meet the<br/><em>chef.</em></h2><blockquote>â€œFood is not simply prepared.<br/>It is experienced.â€</blockquote><p>â€” Alexandre Laurent</p></div><img src={images.chef} alt="Chef Alexandre Laurent in the kitchen"/></Section>
+   <Section id="experience" className="experience"><div className="section-head"><div><Label>Beyond The Plate</Label><h2>The NoirÃ© <em>experience.</em></h2></div></div><div className="experience-grid">{[['PRIVATE DINING','An intimate dining experience designed for special occasions.','https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80'],["CHEF'S TABLE",'Watch our chefs transform seasonal ingredients into remarkable dishes.','https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1200&q=80'],['WINE EXPERIENCE','Discover carefully selected wines paired with our seasonal menu.','https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=1200&q=80']].map(x=><article key={x[0]}><img src={x[2]} alt={x[0]}/><div><Label>Discover</Label><h3>{x[0]}</h3><p>{x[1]}</p><ArrowUpRight/></div></article>)}</div></Section>
+   <Section id="gallery" className="gallery"><div className="section-head"><div><Label>A Glimpse Inside</Label><h2>In the <em>moment.</em></h2></div><p>Follow the story<br/>of an evening at NOIRÃ‰.</p></div><div className="gallery-grid">{[images.interior,...dishes.map(d=>d[3]),'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1000&q=80','https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=1000&q=80'].map((im,i)=><button key={im+i} onClick={()=>setLightbox(i)}><img src={im} alt="NoirÃ© dining moment"/></button>)}</div></Section>
+   <Section id="reservation" className="reservation"><div><Label>Join Us</Label><h2>Your table<br/><em>awaits.</em></h2><p>For evenings worth remembering.</p></div>{sent?<motion.div className="success" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}}><span>âœ¦</span><h3>Reservation request received.</h3><p>We will be in touch shortly to confirm your evening.</p></motion.div>:<form onSubmit={e=>{e.preventDefault();setSent(true)}}><div className="form-grid"><input required placeholder="Name"/><input required type="email" placeholder="Email"/><input required placeholder="Phone"/><input required type="date"/><select defaultValue=""><option value="" disabled>Time</option><option>6:00 PM</option><option>7:30 PM</option><option>9:00 PM</option></select><select defaultValue=""><option value="" disabled>Guests</option><option>2 guests</option><option>4 guests</option><option>6 guests</option></select></div><textarea placeholder="Special request (optional)"/><button className="btn gold" type="submit">Request Reservation <ArrowUpRight size={17}/></button></form>}</Section>
+   <Section id="contact" className="contact"><div><Label>Find Us</Label><h2>Come <em>as you are.</em></h2><div className="contact-details"><p><MapPin size={16}/>123 Maison Avenue<br/>New York, NY 10001</p><p><Clock3 size={16}/>Mon â€“ Thu Â· 5:30 PM â€“ 10:30 PM<br/>Fri â€“ Sat Â· 5:30 PM â€“ 11:30 PM<br/>Sunday Â· Closed</p><p><Phone size={16}/>+1 212 555 0198<br/><Mail size={16}/>hello@noire.restaurant</p></div></div><div className="map"><span>NOIRÃ‰<br/><small>40.7128Â° N Â· 74.0060Â° W</small></span></div></Section>
+  </main>
+  <footer><div className="footer-top"><div className="footer-logo">NOIRÃ‰<span>Â®</span><p>Modern fine dining<br/>in the heart of New York.</p></div><div className="footer-links">{nav.map(([n,id])=><button key={id} onClick={()=>go(id)}>{n}</button>)}</div><div className="newsletter"><Label>Join our table.</Label><div><input placeholder="Your email address"/><button aria-label="Subscribe"><ArrowUpRight/></button></div><p>Instagram Â· Facebook Â· TikTok</p></div></div><div className="footer-bottom"><span>Â© 2026 NOIRÃ‰ Restaurant. All rights reserved.</span><span>Privacy Â· Terms</span></div></footer>
+  <AnimatePresence>{lightbox!==null&&<motion.div className="lightbox" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}><button className="close" onClick={()=>setLightbox(null)}><X/></button><button className="lb-prev" onClick={()=>setLightbox((lightbox-1+dishes.length+3)% (dishes.length+3))}><ChevronLeft/></button><motion.img initial={{scale:.9}} animate={{scale:1}} src={([images.interior,...dishes.map(d=>d[3]),'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1000&q=80','https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=1000&q=80'] as string[])[lightbox]} alt="Gallery enlarged"/><button className="lb-next" onClick={()=>setLightbox((lightbox+1)% (dishes.length+3))}><ChevronRight/></button></motion.div>}</AnimatePresence>
+ </div>
 }
+export default App
+

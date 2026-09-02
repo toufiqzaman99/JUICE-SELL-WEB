@@ -45,3 +45,5 @@ Plus: custom cursor (EXPLORE/CLICK states, desktop only), fly-to-cart animation 
 - `prefers-reduced-motion` respected (intro skipped, ambient loops off)
 - Mobile: smooth scroll + product transitions + reveals kept; custom cursor, magnetism and 3D tilt disabled on touch
 - No horizontal overflow at any breakpoint
+
+## This is the final project
